@@ -287,7 +287,7 @@ export const parseFlags = <T extends Record<string, any> | undefined>(actionFlag
 }
 
 const getLatestRemoteVersion = async () => {
-  const version = await exec('git ls-remote --tags --sort=-refname git@github.com:moneaOrg/emu.git').catch(({ stderr }) => ({
+  const version = await exec('git ls-remote --tags --sort=-refname git@github.com:mynt-com/emu.git').catch(({ stderr }) => ({
     stderr,
     stdout: null,
   }))
@@ -323,7 +323,7 @@ export const verifyEmuVersion = async (skip = false) => {
     console.warn(chalk.yellow('unable to read emu version, you may be running an old version'))
 
     if (typeof latest !== 'string') {
-      console.error(latest.stderr)
+      console.error(latest?.stderr)
     }
 
     return
@@ -336,14 +336,8 @@ export const verifyEmuVersion = async (skip = false) => {
   const isOldMinor = latestMinor > currentMinor
   const isOldPatch = latestPatch > currentPatch
 
-  if (isOldMajor || isOldMinor) {
-    return console.warn(
-      chalk.red(`Emu is out of date, STRONGLY suggest you run 'yarn install' (current: '${version}', latest: '${latest}')`),
-    )
-  }
-
-  if (isOldPatch) {
-    return console.warn(chalk.yellow(`A newer version of Emu is avaliable (current: '${version}', latest: '${latest}')`))
+  if (isOldMajor || isOldMinor || isOldPatch) {
+    return console.warn(chalk.red(chalk.yellow(`A newer version of Emu is avaliable (current: '${version}', latest: '${latest}')`)))
   }
 }
 
