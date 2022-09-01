@@ -1,0 +1,36 @@
+{
+  "env": {
+    "es2021": true,
+    "node": true,
+    "jest/globals": true
+  },
+  "extends": ["airbnb-base", "prettier", "plugin:import/errors", "plugin:import/warnings", "plugin:import/typescript"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint", "prettier", "unused-imports", "jest"],
+  "rules": {
+    "prettier/prettier": "error",
+    "linebreak-style": ["error", "unix"],
+    "semi": ["error", "never"],
+    "import/extensions": "off",
+    "object-curly-newline": "off",
+    "import/no-cycle": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "unused-imports/no-unused-imports-ts": "error",
+    "unused-imports/no-unused-vars-ts": [
+      "warn",
+      { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+    ],
+    "max-len": ["error", { "code": 140 }],
+    "no-shadow": "off",
+    "no-console": "off",
+    "consistent-return": "off",
+    "import/prefer-default-export": "off",
+    "lines-between-class-members": "off",
+    "no-dupe-class-members": "off"
+  }
+}

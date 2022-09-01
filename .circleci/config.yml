@@ -1,0 +1,87 @@
+version: 2.1
+
+workspace: &workspace
+  attach_workspace:
+    at: ~/project
+
+defaults: &defaults
+  working_directory: ~/project/emu
+  docker:
+    - image: cimg/node:16.16
+  resource_class: medium
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - *workspace
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      - run:
+          name: Install dependencies
+          command: yarn install --frozen-lockfile
+      - run:
+          name: Build emu
+          command: yarn build
+      - save_cache:
+            paths:
+              - node_modules
+            key: v1-dependencies-{{ checksum "package.json" }}
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - emu
+
+  lint:
+    <<: *defaults
+    steps:
+      - *workspace
+      - run:
+          name: Linting
+          command: yarn lint
+
+  test:
+    <<: *defaults
+    steps:
+      - *workspace
+      - run:
+          name: Link emu
+          command: npm link
+      - run:
+          name: Unit tests
+          command: yarn test
+      - run:
+          name: Integration tests
+          command: ./ci/test-emu-process.sh
+  publish:
+    <<: *defaults
+    steps:
+      - *workspace
+      - run:
+          name: Publish
+          command: echo "publish"
+
+workflows:
+  emu-workflow:
+    jobs:
+      - build
+      - lint:
+          requires:
+              - build
+      - test:
+          requires:
+              - build
+      - npm-publish-approval:
+          filters:
+            branches:
+              only: master
+          type: approval
+          requires:
+            - lint
+            - test
+      - publish:
+          requires:
+            - npm-publish-approval

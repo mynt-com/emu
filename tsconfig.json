@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "bin",
+    "target": "esnext",
+    "module": "CommonJS",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["./node_modules/@types", "jest"],
+    "types": ["jest", "node"],
+    "allowJs": true
+  },
+  "include": ["src", "node_modules/@types", "jest.config.ts", "./src/workers/loader.js"],
+  "exclude": ["node_modules"]
+}
