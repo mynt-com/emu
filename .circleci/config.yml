@@ -80,7 +80,7 @@ workflows:
       - npm-publish-approval:
           filters:
             branches:
-              only: master
+              only: npm-publish
           type: approval
           requires:
             - lint
