@@ -27,9 +27,9 @@ jobs:
           name: Build emu
           command: yarn build
       - save_cache:
-            paths:
-              - node_modules
-            key: v1-dependencies-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -61,8 +61,11 @@ jobs:
     steps:
       - *workspace
       - run:
-          name: Publish
-          command: echo "publish"
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
+      - run:
+          name: Publish package
+          command: npm publish --access public
 
 workflows:
   emu-workflow:
@@ -70,10 +73,10 @@ workflows:
       - build
       - lint:
           requires:
-              - build
+            - build
       - test:
           requires:
-              - build
+            - build
       - npm-publish-approval:
           filters:
             branches:

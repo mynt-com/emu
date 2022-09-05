@@ -1,5 +1,5 @@
 {
-  "name": "emu",
+  "name": "@mynt.com/emu",
   "version": "0.0.0",
   "bin": "./bin/src/index.js",
   "license": "MIT",
@@ -67,5 +67,8 @@
   ],
   "author": {
     "name": "Alexander Granhof"
-  }
+  },
+  "files": [
+    "bin"
+  ]
 }
