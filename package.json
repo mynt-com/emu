@@ -69,6 +69,8 @@
     "name": "Alexander Granhof"
   },
   "files": [
-    "bin"
+    "bin",
+    "!bin/src/__tests__",
+    "!bin/jest.config*"
   ]
 }

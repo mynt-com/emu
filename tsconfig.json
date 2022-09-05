@@ -15,5 +15,5 @@
     "declaration": true
   },
   "include": ["src", "node_modules/@types", "jest.config.ts", "./src/workers/loader.js"],
-  "exclude": ["node_modules", "src/__tests__/*"]
+  "exclude": ["node_modules"]
 }
