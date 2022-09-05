@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import { Api as FigmaApi } from 'figma-api'
+import { getFileApi, getImageApi } from 'figma-api/lib/api-funcs'
 import { GetProjectFilesResult } from 'figma-api/lib/api-types'
 import { commaSeperatedArray } from '../helpers/generics'
 
@@ -14,7 +15,7 @@ export class Figma {
 
   constructor({ token }: FigmaApiConstructor) {
     if (typeof token !== 'string' || token.length === 0) {
-      console.error(chalk.red('token is invalid in the config or ENV'))
+      console.error(chalk.red('figma token is invalid in the config or missing in ENV (EMU_FIGMA_TOKEN)'))
       process.exit(1)
     }
 
@@ -39,14 +40,14 @@ export class Figma {
     )
   }
 
-  file(...args: Parameters<typeof this.api.getFile>) {
+  file(...args: Parameters<typeof getFileApi>) {
     return this.api.getFile(...args).catch(error => {
       console.error(chalk.red(error.message))
       process.exit(1)
     })
   }
 
-  image(...args: Parameters<typeof this.api.getImage>) {
+  image(...args: Parameters<typeof getImageApi>) {
     return this.api.getImage(...args)
   }
 }

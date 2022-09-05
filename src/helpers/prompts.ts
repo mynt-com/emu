@@ -7,14 +7,14 @@ type Choice = {
   name: string
 }
 
+enum TextKeyKeys {
+  file = 'file',
+}
+
 /**
  * Prompts the user which project they would like to extract keys from the given choices
  */
 export const projectSelect = async (choices: Choice[]) => {
-  enum TextKeyKeys {
-    file = 'file',
-  }
-
   const promise = enquirer.prompt<Record<TextKeyKeys, string>>({
     type: 'select',
     name: TextKeyKeys.file,
@@ -98,14 +98,14 @@ export const figmaConfig = async (config: ConfigFile | null, quick = false) => {
   return { ...data, [ConfigKeys.configLocation]: LOCAL_DIR }
 }
 
+enum ConfigFigmaFilesKeys {
+  files = 'files',
+}
+
 /**
  * Prompts the user which figma files of the ones given that they want to use
  */
 export const configFigmaFiles = (choices: Choice[], initial?: number[]) => {
-  enum ConfigFigmaFilesKeys {
-    files = 'files',
-  }
-
   const promise = enquirer.prompt<Record<ConfigFigmaFilesKeys, string[]>>({
     type: 'multiselect',
     name: ConfigFigmaFilesKeys.files,

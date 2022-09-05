@@ -322,8 +322,8 @@ export const verifyEmuVersion = async (skip = false) => {
   if (typeof latest !== 'string' || typeof version !== 'string') {
     console.warn(chalk.yellow('unable to read emu version, you may be running an old version'))
 
-    if (typeof latest !== 'string') {
-      console.error(latest?.stderr)
+    if (typeof latest !== 'string' && latest?.stderr) {
+      console.error(latest.stderr)
     }
 
     return
