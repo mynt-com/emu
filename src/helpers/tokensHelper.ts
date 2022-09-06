@@ -33,7 +33,7 @@ export const parseKeyName = (name: string, noPrefix?: boolean) => {
   return camelcase(prefixedName.replaceAll('/', '-'))
 }
 
-export const parseStyleKeyName = (name: string, noPrefix?: boolean) => {
+const parseStyleKeyName = (name: string, noPrefix?: boolean) => {
   const prefixedName = noPrefix ? name.split('/').slice(-1).join('') : name
 
   return camelcase(prefixedName.replaceAll(/\W/g, '-'))
