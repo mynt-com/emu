@@ -1,6 +1,6 @@
 {
   "name": "@mynt.com/emu",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "bin": "./bin/src/index.js",
   "license": "MIT",
   "main": "./bin/src/index.js",
