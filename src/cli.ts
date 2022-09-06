@@ -73,6 +73,7 @@ const Tokens = cli
   .command('tokens')
   .argument('[file]', 'name of the figma file that tokens should be extracted from')
   .option('-o, --outDir <path>', 'output directory of the tokens')
+  .option('--remove-prefix', 'removes the style group prefix name (primary/main/green => green)')
   .option('--fid, --file-id <id>', 'pass a file id to process, this is used when you want to fetch a public figma file')
   .description('downloads the tokens from figma into typescript files')
   .action(tokens)

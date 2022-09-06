@@ -19,7 +19,7 @@ type NodeStyle = {
 // The child is either frame or text
 type TokenChild = FRAME & TEXT & Node
 type TokenParser = (node: TokenChild, nodeStyles: NodeStyle[]) => [string, string | number | Record<string, any>] | void
-type CurriedTokenParser = (keyParser: (name: string) => string) => TokenParser
+type CurriedTokenParser = (keyParser: (name: string, noPrefix?: boolean) => string, noPrefix?: boolean) => TokenParser
 
 type StyleKeys = 'fill' | 'text' | 'effect' | 'grid'
 type StyleMap = Record<StyleKeys, string | undefined>
@@ -27,74 +27,74 @@ type StyleMap = Record<StyleKeys, string | undefined>
 export const parseStyleNodes = (file: GetFileResult): NodeStyle[] =>
   Object.keys(file.styles).map(nodeId => ({ nodeId, ...file.styles[nodeId] }))
 
-export const parseKeyName = (name: string) => camelcase(name.replaceAll('/', '-'))
+export const parseKeyName = (name: string, noPrefix?: boolean) => {
+  const prefixedName = noPrefix ? name.split('/').slice(-1).join('') : name
 
-const parseColorTokens: CurriedTokenParser =
-  (keyParser = parseKeyName) =>
-  (child, nodeStyles) => {
-    const fillStyles = nodeStyles.filter(node => node.styleType === 'FILL')
+  return camelcase(prefixedName.replaceAll('/', '-'))
+}
 
-    // The official TS says the keys are in full caps, but theyre not
-    const styleNode = fillStyles.find(node => node.nodeId === (child?.styles as unknown as StyleMap)?.fill)
+export const parseStyleKeyName = (name: string, noPrefix?: boolean) => {
+  const prefixedName = noPrefix ? name.split('/').slice(-1).join('') : name
 
-    if (!styleNode) return
+  return camelcase(prefixedName.replaceAll(/\W/g, '-'))
+}
 
-    // child.background is deprecated, its now stored in child.fills
-    const [{ color, opacity, gradientStops }] = [...child.fills, ...child.strokes]
-    const key = keyParser(styleNode.name)
+const parseColorTokens: CurriedTokenParser = (keyParser, noPrefix) => (child, nodeStyles) => {
+  const fillStyles = nodeStyles.filter(node => node.styleType === 'FILL')
 
-    if (gradientStops) {
-      const [{ color: startColor }, { color: endColor }] = gradientStops
+  // The official TS says the keys are in full caps, but theyre not
+  const styleNode = fillStyles.find(node => node.nodeId === (child?.styles as unknown as StyleMap)?.fill)
 
-      return [key, `linear-gradient(135deg, ${getRGBStringAlphaMerged(startColor)} 0%, ${getRGBStringAlphaMerged(endColor)} 100%)`]
-    }
+  if (!styleNode) return
 
-    if (color) {
-      return [key, getRGBStringAlphaMerged({ ...color, a: opacity ?? color?.a })]
-    }
+  // child.background is deprecated, its now stored in child.fills
+  const [{ color, opacity, gradientStops }] = [...child.fills, ...child.strokes]
+  const key = keyParser(styleNode.name, noPrefix)
+
+  if (gradientStops) {
+    const [{ color: startColor }, { color: endColor }] = gradientStops
+
+    return [key, `linear-gradient(135deg, ${getRGBStringAlphaMerged(startColor)} 0%, ${getRGBStringAlphaMerged(endColor)} 100%)`]
   }
 
-const parseShadowTokens: CurriedTokenParser =
-  (keyParser = parseKeyName) =>
-  (child, nodeStyles) => {
-    // The official TS says the keys are in full caps, but theyre not
-    const styleNode = nodeStyles.find(node => node.nodeId === (child?.styles as unknown as StyleMap)?.effect)
-    const effect = child.effects.find(effect => effect.type === EffectType.DROP_SHADOW)
-
-    if (!styleNode || !effect) return
-
-    const key = keyParser(styleNode.name)
-    const { offset, radius, color } = effect as Required<Effect>
-
-    return [key, `${offset.x.toFixed()}px ${offset.y.toFixed()}px ${radius.toFixed()}px ${getRGBStringAlphaMerged(color)}`]
+  if (color) {
+    return [key, getRGBStringAlphaMerged({ ...color, a: opacity ?? color?.a })]
   }
+}
 
-const parseStyleTokens: CurriedTokenParser =
-  (keyParser = parseKeyName) =>
-  child => {
-    if (child.type !== 'TEXT') return
+const parseShadowTokens: CurriedTokenParser = (keyParser, noPrefix) => (child, nodeStyles) => {
+  // The official TS says the keys are in full caps, but theyre not
+  const styleNode = nodeStyles.find(node => node.nodeId === (child?.styles as unknown as StyleMap)?.effect)
+  const effect = child.effects.find(effect => effect.type === EffectType.DROP_SHADOW)
 
-    return [keyParser(child.name), parseStyle(child.style)]
-  }
+  if (!styleNode || !effect) return
 
-const defaultNumberTokenParser: CurriedTokenParser =
-  (keyParser = parseKeyName) =>
-  child => {
-    if (child.type !== 'TEXT') return
+  const key = keyParser(styleNode.name, noPrefix)
+  const { offset, radius, color } = effect as Required<Effect>
 
-    const parsedFloat = parseFloat(child.characters)
-    const data = Number.isNaN(parsedFloat) ? child.characters : roundDecimals(parsedFloat, 2)
+  return [key, `${offset.x.toFixed()}px ${offset.y.toFixed()}px ${radius.toFixed()}px ${getRGBStringAlphaMerged(color)}`]
+}
 
-    return [keyParser(child.name), data]
-  }
+const parseStyleTokens: CurriedTokenParser = keyParser => child => {
+  if (child.type !== 'TEXT') return
 
-const defaultTokenParser: CurriedTokenParser =
-  (keyParser = parseKeyName) =>
-  child => {
-    if (child.type !== 'TEXT') return
+  return [keyParser(child.name), parseStyle(child.style)]
+}
 
-    return [keyParser(child.name), child.characters]
-  }
+const defaultNumberTokenParser: CurriedTokenParser = keyParser => child => {
+  if (child.type !== 'TEXT') return
+
+  const parsedFloat = parseFloat(child.characters)
+  const data = Number.isNaN(parsedFloat) ? child.characters : roundDecimals(parsedFloat, 2)
+
+  return [keyParser(child.name), data]
+}
+
+const defaultTokenParser: CurriedTokenParser = keyParser => child => {
+  if (child.type !== 'TEXT') return
+
+  return [keyParser(child.name), child.characters]
+}
 
 const findTokensRoot = (file: GetFileResult, name: string) => {
   const { children } = (file.document.children.find(node => node.name === name) as any) ?? {}
@@ -141,29 +141,31 @@ export const writeTokenFiles = (tokens: Record<string, string>, dirPath: string)
 
 const getTokenType = (page: any) => page.children?.find((child: Node) => child.name === EMU_TOKEN_TYPE_LAYER_NAME)?.characters
 
-const getTokenParser = (token: string, type: string): TokenParser => {
-  const keyParser = parseKeyName
-
+const getTokenParser = (type: string, noPrefix?: boolean): TokenParser => {
   if (type === 'colors') {
-    return parseColorTokens(keyParser)
+    return parseColorTokens(parseStyleKeyName, noPrefix)
   }
 
   if (type === 'shadows') {
-    return parseShadowTokens(keyParser)
+    return parseShadowTokens(parseStyleKeyName, noPrefix)
   }
 
   if (type === 'numbers') {
-    return defaultNumberTokenParser(keyParser)
+    return defaultNumberTokenParser(parseKeyName)
   }
 
   if (type === 'styles') {
-    return parseStyleTokens(keyParser)
+    return parseStyleTokens(parseKeyName)
   }
 
-  return defaultTokenParser(keyParser)
+  return defaultTokenParser(parseKeyName)
 }
 
-export const parseTokens = (file: GetFileResult) => {
+type ParseTokensOptions = {
+  noPrefix?: boolean
+}
+
+export const parseTokens = (file: GetFileResult, options?: ParseTokensOptions) => {
   const nodeStyles = parseStyleNodes(file)
   const tokens = file.document.children.map(child => child.name)
 
@@ -185,7 +187,7 @@ export const parseTokens = (file: GetFileResult) => {
     }
 
     const reducer = (prev: any, node: any) => {
-      const [key, value] = getTokenParser(token, tokensType)(node, nodeStyles) ?? []
+      const [key, value] = getTokenParser(tokensType, options?.noPrefix)(node, nodeStyles) ?? []
 
       return key ? { ...prev, [key]: value } : prev
     }
