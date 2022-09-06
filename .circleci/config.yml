@@ -80,11 +80,12 @@ workflows:
       - npm-publish-approval:
           filters:
             branches:
-              only: npm-publish
+              only: master
+            tags:
+              only: /.*/
           type: approval
-          requires:
-            - lint
-            - test
       - publish:
           requires:
             - npm-publish-approval
+            - test
+            - lint
