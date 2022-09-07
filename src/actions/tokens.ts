@@ -13,6 +13,7 @@ type Flags = {
   cache?: boolean
   outDir?: string
   fileId?: string
+  removePrefix?: boolean
 }
 
 const tokens = async (projectName: string, rawFlags: Flags) => {
@@ -50,7 +51,7 @@ const tokens = async (projectName: string, rawFlags: Flags) => {
 
   const dirPath = getTokensOutputDir(flags.outDir, config.file)
 
-  const parsedTokens = parseTokens(file)
+  const parsedTokens = parseTokens(file, { noPrefix: flags.removePrefix })
   const files = convertTokensToFiles(parsedTokens)
 
   const tokensSpinner = ora(`Writing tokens files to '${dirPath}'`)
