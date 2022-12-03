@@ -287,7 +287,7 @@ export const parseFlags = <T extends Record<string, any> | undefined>(actionFlag
 }
 
 const getLatestRemoteVersion = async () => {
-  const version = await exec('git ls-remote --tags --sort=-refname git@github.com:mynt-com/emu.git').catch(({ stderr }) => ({
+  const version = await exec('npm show @mynt.com/emu version').catch(({ stderr }) => ({
     stderr,
     stdout: null,
   }))
@@ -305,7 +305,7 @@ const getLatestRemoteVersion = async () => {
 const getEmuVersion = async (): Promise<Record<string, any>> => {
   const localPackage = JSON.parse(await fsAsync.readFile('./package.json', 'utf-8').catch(() => '{}'))
 
-  if (localPackage?.name !== 'emu') {
+  if (localPackage?.name !== '@mynt.com/emu') {
     return JSON.parse(await fsAsync.readFile(path.join('node_modules', 'emu', 'package.json'), 'utf8').catch(() => '{}'))
   }
 
