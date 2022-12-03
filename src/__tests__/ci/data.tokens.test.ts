@@ -65,25 +65,25 @@ describe('Test the emu tokens data output', () => {
         fontFamily: 'Inter',
         fontSize: '12px',
         fontWeight: 400,
-        lineHeight: '14.1px',
+        lineHeight: '15px',
       },
       paragraphLarge: {
         fontFamily: 'Inter',
         fontSize: '16px',
         fontWeight: 400,
-        lineHeight: '18.8px',
+        lineHeight: '19px',
       },
       titleSmall: {
         fontFamily: 'Inter',
         fontSize: '24px',
         fontWeight: 700,
-        lineHeight: '28.1px',
+        lineHeight: '29px',
       },
       titleLarge: {
         fontFamily: 'Inter',
         fontSize: '32px',
         fontWeight: 700,
-        lineHeight: '37.5px',
+        lineHeight: '39px',
       },
     })
   })
