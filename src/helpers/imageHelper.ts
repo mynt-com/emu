@@ -295,8 +295,18 @@ export const getUrlsForImages = async (figma: Figma, figmaFile: FigmaFile, image
 
       return figma.image(figmaFile.url, { ids, scale, format })
     })
-
-  return mapImageURL(await Promise.all(imageRequests))
+  const imageNodes = mapImageURL(await Promise.all(imageRequests))
+  const temp = await figma.fileNodes(figmaFile.url, Object.keys(imageNodes))
+  await fsAsync.writeFile(
+    './temp.json',
+    JSON.stringify(
+      Object.values(temp.nodes).map(node => ({ schemaVersion: node?.schemaVersion, id: node?.document.id, name: node?.document.name })),
+      null,
+      2,
+    ),
+    'utf-8',
+  )
+  return imageNodes
 }
 
 // This method maps the images into a format that is required by the figma api

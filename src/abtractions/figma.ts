@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { Api as FigmaApi } from 'figma-api'
-import { getFileApi, getImageApi } from 'figma-api/lib/api-funcs'
+import { getComponentApi, getFileApi, getFileNodesApi, getImageApi } from 'figma-api/lib/api-funcs'
 import { GetProjectFilesResult } from 'figma-api/lib/api-types'
 import { commaSeperatedArray } from '../helpers/generics'
 
@@ -49,5 +49,13 @@ export class Figma {
 
   image(...args: Parameters<typeof getImageApi>) {
     return this.api.getImage(...args)
+  }
+
+  fileNodes(...args: Parameters<typeof getFileNodesApi>) {
+    return this.api.getFileNodes(...args)
+  }
+
+  component(...args: Parameters<typeof getComponentApi>) {
+    return this.api.getComponent(...args)
   }
 }
