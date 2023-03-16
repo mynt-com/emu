@@ -42,7 +42,7 @@ export function calculateDegree2Point(point1: Vector, point2: Vector): number {
   return roundNumber(angleDeg, 2)
 }
 
-export function calculateDegree(gradientHandlePositions: Vector[]) {
+function calculateDegree(gradientHandlePositions: Vector[]) {
   return calculateDegree2Point(gradientHandlePositions[0], gradientHandlePositions[1])
 }
 

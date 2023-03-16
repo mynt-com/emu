@@ -1,5 +1,12 @@
 import { Paint, PaintType, Vector } from 'figma-api'
-import { roundColorValue, roundNumber, calculateDegree2Point, createLinearGradientString } from '../../helpers/colorHelper'
+import {
+  roundColorValue,
+  roundNumber,
+  calculateDegree2Point,
+  createLinearGradientString,
+  createRadialGradientString,
+  createSolidColorString,
+} from '../../helpers/colorHelper'
 
 describe('roundColorValue', () => {
   test('returns a value within the given scale', () => {
@@ -81,5 +88,64 @@ describe('createLinearGradientString', () => {
     }
 
     expect(() => createLinearGradientString(fills)).toThrow()
+  })
+})
+
+describe('createRadialGradientString', () => {
+  test('should throw an error if fills is missing', () => {
+    expect(() => {
+      createRadialGradientString(null as unknown as Paint)
+    }).toThrow('Missing fills and gradientHandlePositions in createRadialGradientString!')
+  })
+
+  test('should throw an error if gradientHandlePositions is missing', () => {
+    expect(() => {
+      createRadialGradientString({
+        gradientHandlePositions: null as unknown as Vector[],
+        type: PaintType.GRADIENT_RADIAL,
+      })
+    }).toThrow('Missing fills and gradientHandlePositions in createRadialGradientString!')
+  })
+
+  test('should generate a radial gradient string with correct values', () => {
+    const fills: Paint = {
+      gradientHandlePositions: [
+        { x: 0.2, y: 0.3 },
+        { x: 0.5, y: 0.6 },
+        { x: 0.9, y: 0.8 },
+      ],
+      gradientStops: [
+        { color: { r: 255, g: 0, b: 0, a: 1 }, position: 0 },
+        { color: { r: 0, g: 255, b: 0, a: 0.5 }, position: 50 },
+        { color: { r: 0, g: 0, b: 255, a: 0.2 }, position: 100 },
+      ],
+      type: PaintType.GRADIENT_RADIAL,
+    }
+
+    const result = createRadialGradientString(fills)
+
+    expect(result).toBe(
+      'radial-gradient(-70.0% 30.0% at 20.0% 30.0%, rgba(255, 0, 0, 1) 0%, rgba(0, 255, 0, 0.5) 100%, rgba(0, 0, 255, 0.2) 100%)',
+    )
+  })
+})
+
+describe('createSolidColorString', () => {
+  test('should throw an error if fills is missing', () => {
+    expect(() => {
+      createSolidColorString(null as unknown as Paint)
+    }).toThrow('Missing fills in createSolidColorString!')
+  })
+
+  test('should generate a solid color string with correct values', () => {
+    const fills: Paint = {
+      color: { r: 255, g: 0, b: 0, a: 1 },
+      opacity: 0.5,
+      type: PaintType.SOLID,
+    }
+
+    const result = createSolidColorString(fills)
+
+    expect(result).toBe('rgba(255, 0, 0, 0.5)')
   })
 })
