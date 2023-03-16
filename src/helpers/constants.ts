@@ -8,6 +8,18 @@ export const IMAGEKEY_FILE_NAME = 'images.json'
 export const HOME_DIR = path.join(os.homedir(), CONFIG_FILE_NAME)
 export const LOCAL_DIR = path.join(process.cwd(), CONFIG_FILE_NAME)
 
+type RgbaColor = {
+  r: number
+  g: number
+  b: number
+  a: number
+}
+
+export type GradientStop = {
+  color: RgbaColor
+  position: number
+}
+
 export type FigmaFile = {
   name: string
   url: string
