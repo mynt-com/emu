@@ -1,30 +1,13 @@
 import path from 'path'
 import { promises as fsAsync } from 'fs'
-import { Color, Node, TypeStyle } from 'figma-api'
+import { Node, TypeStyle } from 'figma-api'
 import ora from 'ora'
 import chalk from 'chalk'
 import { findNearestLinkableParent, isVerboseEnv, NodeParserContext, tryParseJSON } from './generics'
 import { ConfigFile, FigmaFile, TextKey, TEXTKEY_FILE_NAME, Warning, WARNING_LOG_NAME } from './constants'
+import { createLinearGradientString, createRadialGradientString, createSolidColorString } from './colorHelper'
 
 export const roundDecimals = (value: number, decimalPlaces = 1) => Math.round(value * 10 ** decimalPlaces) / 10 ** decimalPlaces
-
-const toRGBValue = (val: number) => Math.round(val * 255)
-
-export const getRGBString = ({ r, g, b, a }: Color) => `rgba(${toRGBValue(r)}, ${toRGBValue(g)}, ${toRGBValue(b)}, ${roundDecimals(a, 2)})`
-
-/**
- * This method merges in the alpha channel as if it was behind a white background to an adjusted rgb color without the alpha channel
- */
-export const getRGBStringAlphaMerged = ({ r, g, b, a }: Color) => {
-  const alphaOffset = 1 - a
-  const mergedAlphaOffset = alphaOffset * 255
-
-  const red = Math.round(toRGBValue(r) * a + mergedAlphaOffset)
-  const green = Math.round(toRGBValue(g) * a + mergedAlphaOffset)
-  const blue = Math.round(toRGBValue(b) * a + mergedAlphaOffset)
-
-  return `rgb(${red}, ${green}, ${blue})`
-}
 
 export const parseStyle = (style: TypeStyle) => ({
   fontFamily: style?.fontFamily,
@@ -58,14 +41,28 @@ export const parseTextNode = (
 
   // This split comes from old emu, guessing there is a common special new line char from figma
   const characters = textNode.characters.split('\u2028').join('\n')
-  const colorObject = textNode?.fills?.[0]?.color
 
   if (characters === '') return prev
 
   const name = textNode.name.split('\u2028').join('\n')
   const style = parseStyle(textNode.style)
-  const color = colorObject && getRGBString(colorObject)
   const opacity = typeof textNode.opacity === 'number' ? roundDecimals(textNode.opacity, 2) : textNode.opacity
+
+  const fills = textNode.fills?.[0]
+
+  let color = ''
+
+  if (fills?.type === 'SOLID') {
+    color = createSolidColorString(fills)
+  }
+
+  if (fills?.type === 'GRADIENT_LINEAR') {
+    color = createLinearGradientString(fills)
+  }
+
+  if (fills?.type === 'GRADIENT_RADIAL') {
+    color = createRadialGradientString(fills)
+  }
 
   const allStyles = {
     ...style,

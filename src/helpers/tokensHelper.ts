@@ -4,9 +4,10 @@ import path from 'path'
 import { promises as fsAsync } from 'fs'
 import chalk from 'chalk'
 import { GetFileResult } from 'figma-api/lib/api-types.js'
-import { getRGBStringAlphaMerged, parseStyle, roundDecimals } from './textHelper'
+import { parseStyle, roundDecimals } from './textHelper'
 import { EMU_TOKEN_TYPE_LAYER_NAME, TOKENS_DIR_NAME } from './constants'
 import { recursiveReduceChildren } from './generics'
+import { createSolidColorString, createLinearGradientString, createRadialGradientString } from './colorHelper'
 
 type NodeStyle = {
   key: string
@@ -47,18 +48,20 @@ const parseColorTokens: CurriedTokenParser = (keyParser, noPrefix) => (child, no
 
   if (!styleNode) return
 
-  // child.background is deprecated, its now stored in child.fills
-  const [{ color, opacity, gradientStops }] = [...child.fills, ...child.strokes]
   const key = keyParser(styleNode.name, noPrefix)
 
-  if (gradientStops) {
-    const [{ color: startColor }, { color: endColor }] = gradientStops
+  const fills = child.fills?.[0]
 
-    return [key, `linear-gradient(135deg, ${getRGBStringAlphaMerged(startColor)} 0%, ${getRGBStringAlphaMerged(endColor)} 100%)`]
+  if (fills?.type === 'SOLID') {
+    return [key, createSolidColorString(fills)]
   }
 
-  if (color) {
-    return [key, getRGBStringAlphaMerged({ ...color, a: opacity ?? color?.a })]
+  if (fills?.type === 'GRADIENT_LINEAR') {
+    return [key, createLinearGradientString(fills)]
+  }
+
+  if (fills?.type === 'GRADIENT_RADIAL') {
+    return [key, createRadialGradientString(fills)]
   }
 }
 
@@ -70,9 +73,9 @@ const parseShadowTokens: CurriedTokenParser = (keyParser, noPrefix) => (child, n
   if (!styleNode || !effect) return
 
   const key = keyParser(styleNode.name, noPrefix)
-  const { offset, radius, color } = effect as Required<Effect>
+  const { offset, radius } = effect as Required<Effect>
 
-  return [key, `${offset.x.toFixed()}px ${offset.y.toFixed()}px ${radius.toFixed()}px ${getRGBStringAlphaMerged(color)}`]
+  return [key, `${offset.x.toFixed()}px ${offset.y.toFixed()}px ${radius.toFixed()}px ${createSolidColorString(child.fills[0])}`]
 }
 
 const parseStyleTokens: CurriedTokenParser = keyParser => child => {

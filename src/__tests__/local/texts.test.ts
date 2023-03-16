@@ -1,5 +1,5 @@
 import { recursiveReduceChildren } from '../../helpers/generics'
-import { formatFileName, getRGBString, parseTextNode, roundDecimals, stripDebugInfoFromTextKeys } from '../../helpers/textHelper'
+import { formatFileName, parseTextNode, roundDecimals, stripDebugInfoFromTextKeys } from '../../helpers/textHelper'
 import figmaTree, { textKeys } from './data/figmaTree'
 
 describe('text action tests', () => {
@@ -12,16 +12,6 @@ describe('text action tests', () => {
 
     expect(decimals.length).toEqual(length)
     expect(rounded.toString().slice(0, length + 2)).toEqual(rounded.toString()) // +2 to account for the '1.'
-  })
-
-  it('can convert to an RGB string', () => {
-    // The rgb strings in figma are from 0-1, hence why we're dividing it by 255
-    const rgb = { r: 127, g: 127, b: 127, a: 0.5 }
-    const figmaRGB = { r: rgb.r / 255, g: rgb.g / 255, b: rgb.b / 255, a: 0.5 }
-
-    const expected = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})`
-
-    expect(getRGBString(figmaRGB)).toEqual(expected)
   })
 
   it('can strip debug from a textkey', () => {
